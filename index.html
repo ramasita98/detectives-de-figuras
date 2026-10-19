@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Detectives de figuras</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F7FB;--grid:#D5E3F0;--ink:#1B2559;--card:#fff;--accent:#E0457B;--blue:#2F6FED;--ok:#1F9D6B;--warn:#C8701A;--hl:#FFE45C;--fill:#EAF1FF;--line:#C9D6EA;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121A2E;--grid:#1C2842;--ink:#E8EEFF;--card:#1A2340;--accent:#FF7AA8;--blue:#7EA6FF;--ok:#4FD39B;--warn:#FFB45E;--hl:#7A6A12;--fill:#243056;--line:#33427A}}
+:root[data-theme="dark"]{--bg:#121A2E;--grid:#1C2842;--ink:#E8EEFF;--card:#1A2340;--accent:#FF7AA8;--blue:#7EA6FF;--ok:#4FD39B;--warn:#FFB45E;--hl:#7A6A12;--fill:#243056;--line:#33427A}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;font-size:18px;line-height:1.35}
+main{max-width:560px;margin:0 auto;padding:16px}
+h1{font-size:2.3rem;line-height:1.05;margin:8px 0 4px;font-weight:700}
+h1 span{background:linear-gradient(transparent 55%,var(--hl) 55%)}
+.sub{margin:0 0 16px;opacity:.85}
+.card{background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:16px;box-shadow:4px 4px 0 var(--ink)}
+label{display:block;font-weight:700;margin:14px 0 6px}
+input[type=text],input[type=number]{width:100%;font:inherit;font-size:1.1rem;padding:10px 12px;border:2px solid var(--ink);border-radius:12px;background:var(--bg);color:var(--ink)}
+.topics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.topics button{font:inherit;font-weight:700;padding:12px 8px;border:2px solid var(--ink);border-radius:12px;background:var(--card);color:var(--ink);cursor:pointer}
+.topics button[aria-pressed=true]{background:var(--hl);color:#1B2559}
+.go{display:block;width:100%;margin-top:18px;font:inherit;font-size:1.2rem;font-weight:700;padding:12px;border:2px solid var(--ink);border-radius:14px;background:var(--accent);color:#fff;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.go:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.top{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
+.chip{border:2px solid var(--ink);border-radius:999px;padding:2px 12px;background:var(--card);font-weight:700;font-size:.95rem}
+.fig{border:2px dashed var(--line);border-radius:12px;background:var(--bg);padding:4px}
+svg{display:block;width:100%;height:auto;max-height:260px}
+.shape{fill:var(--fill);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.mark{stroke:var(--accent);stroke-width:2.5;fill:none;stroke-linecap:round}
+.lab{fill:var(--ink);font:700 17px "Baloo 2","Trebuchet MS",sans-serif;text-anchor:middle;dominant-baseline:central}
+.ang{fill:var(--blue);font:700 17px "Baloo 2","Trebuchet MS",sans-serif;text-anchor:middle;dominant-baseline:central}
+.legend{font-size:.82rem;opacity:.8;margin:6px 2px 0}
+.q{font-weight:700;margin:12px 0 10px}
+.opts{display:grid;gap:8px}
+.opts button{font:inherit;font-weight:700;text-align:left;padding:10px 14px;border:2px solid var(--ink);border-radius:12px;background:var(--card);color:var(--ink);cursor:pointer}
+.opts button:disabled{opacity:.55;cursor:default}
+.opts button.right{background:var(--ok);color:#fff;opacity:1;border-color:var(--ink)}
+.row{display:flex;gap:8px;align-items:center}
+.row input{flex:1}
+.unit{font-weight:700}
+.row button{font:inherit;font-weight:700;padding:10px 14px;border:2px solid var(--ink);border-radius:12px;background:var(--blue);color:#fff;cursor:pointer}
+.fb{margin-top:12px;padding:10px 12px;border-radius:12px;border:2px solid var(--ink);background:var(--bg)}
+.fb.good{border-color:var(--ok)}
+.fb.bad{border-color:var(--warn)}
+.fb b{display:block}
+.next{margin-top:12px}
+.sum{display:grid;gap:6px;margin:12px 0}
+.sum div{display:flex;justify-content:space-between;border-bottom:2px dotted var(--line);padding:2px 0}
+.big{font-size:3rem;font-weight:700;line-height:1}
+.opts.figs{grid-template-columns:1fr 1fr}.opts.figs button{padding:4px;text-align:center}.opts.figs svg{max-height:130px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.go.alt{background:var(--card);color:var(--ink)}
+.mini{font:inherit;font-weight:700;padding:4px 12px;border:2px solid var(--ink);border-radius:10px;background:var(--hl);color:#1B2559;cursor:pointer}
+.stg{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:2px dotted var(--line)}
+.stg.tot{border-bottom:0;font-size:1.2rem}
+.scroll{overflow-x:auto}
+table.tb{width:100%;border-collapse:collapse;margin:8px 0}
+.tb td,.tb th{border:2px solid var(--line);padding:6px 8px;text-align:left}
+.tb td+td,.tb th+th{text-align:center}
+.tb.big td,.tb.big th{font-size:1.15rem}
+.tb tr.tt td{font-weight:700;background:var(--hl);color:#1B2559}
+.tb td.best{background:var(--ok);color:#fff;font-weight:700}
+.codebox{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+code{font:700 1.05rem monospace;background:var(--bg);border:2px solid var(--ink);border-radius:10px;padding:6px 10px;word-break:break-all}
+details{margin-top:12px}summary{cursor:pointer;font-weight:700}
+.rv{border-top:2px dotted var(--line);padding:8px 0}.rv p{margin:4px 0}
+textarea{width:100%;font:inherit;padding:10px;border:2px solid var(--ink);border-radius:12px;background:var(--bg);color:var(--ink);min-height:90px}
+a{color:var(--blue)}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[R(0,a.length-1)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=R(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const rad=d=>d*Math.PI/180;
+const f1=v=>v.toFixed(1);
+
+/* ---------- dibujo ---------- */
+function fit(p,rot,pd){
+  const c=Math.cos(rot||0),s=Math.sin(rot||0);
+  p=p.map(([x,y])=>[x*c-y*s,x*s+y*c]);
+  const xs=p.map(q=>q[0]),ys=p.map(q=>q[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const W=320,H=240,pad=pd||50;
+  const k=Math.min((W-2*pad)/((x1-x0)||1),(H-2*pad)/((y1-y0)||1));
+  const ox=(W-k*(x1-x0))/2-k*x0,oy=(H-k*(y1-y0))/2-k*y0;
+  return p.map(([x,y])=>[x*k+ox,y*k+oy]);
+}
+function unit(a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return[dx/l,dy/l];}
+function draw(p,o){
+  o=o||{};const n=p.length;
+  const cx=p.reduce((s,q)=>s+q[0],0)/n,cy=p.reduce((s,q)=>s+q[1],0)/n;
+  let g=`<polygon class="shape" points="${p.map(q=>f1(q[0])+','+f1(q[1])).join(' ')}"/>`;
+  for(let i=0;i<n;i++){
+    const a=p[i],b=p[(i+1)%n],m=[(a[0]+b[0])/2,(a[1]+b[1])/2],d=unit(a,b),nr=[-d[1],d[0]];
+    const t=(o.ticks||[])[i]||0;
+    const hasP=(o.par||[]).some(pp=>pp.s.includes(i)),both=t>0&&hasP;
+    const at=f=>[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f];
+    const mt=both?at(.32):m,mp=both?at(.68):m;
+    for(let k=0;k<t;k++){const f=(k-(t-1)/2)*6;
+      g+=`<line class="mark" x1="${f1(mt[0]+d[0]*f-nr[0]*7)}" y1="${f1(mt[1]+d[1]*f-nr[1]*7)}" x2="${f1(mt[0]+d[0]*f+nr[0]*7)}" y2="${f1(mt[1]+d[1]*f+nr[1]*7)}"/>`;}
+    (o.par||[]).forEach(pp=>{if(pp.s.includes(i)){for(let k=0;k<pp.c;k++){const sh=-k*8+(pp.c-1)*4;
+      const P=(u,v)=>f1(mp[0]+d[0]*(u+sh)+nr[0]*v)+','+f1(mp[1]+d[1]*(u+sh)+nr[1]*v);
+      g+=`<polyline class="mark" points="${P(-3,6)} ${P(4,0)} ${P(-3,-6)}"/>`;}}});
+    const lb=(o.sides||[])[i];
+    if(lb){const out=unit([cx,cy],m);g+=`<text class="lab" x="${f1(m[0]+out[0]*19)}" y="${f1(m[1]+out[1]*19)}">${lb}</text>`;}
+  }
+  (o.right||[]).forEach(i=>{
+    const v=p[i],u1=unit(v,p[(i+n-1)%n]),u2=unit(v,p[(i+1)%n]),s=13;
+    g+=`<polyline class="mark" points="${f1(v[0]+u1[0]*s)},${f1(v[1]+u1[1]*s)} ${f1(v[0]+(u1[0]+u2[0])*s)},${f1(v[1]+(u1[1]+u2[1])*s)} ${f1(v[0]+u2[0]*s)},${f1(v[1]+u2[1]*s)}"/>`;});
+  (o.angles||[]).forEach((lb,i)=>{
+    if(!lb)return;const v=p[i],u1=unit(v,p[(i+n-1)%n]),u2=unit(v,p[(i+1)%n]);
+    let bx=u1[0]+u2[0],by=u1[1]+u2[1];const l=Math.hypot(bx,by)||1;bx/=l;by/=l;
+    g+=`<text class="ang" x="${f1(v[0]+bx*31)}" y="${f1(v[1]+by*31)}">${lb}</text>`;});
+  return `<svg viewBox="0 0 320 240" role="img" aria-label="${o.alt||'figura'}">${g}</svg>`;
+}
+function triFromAngles(A,B,C){
+  const ac=100*Math.sin(rad(B))/Math.sin(rad(C));
+  return fit([[0,0],[100,0],[ac*Math.cos(rad(A)),-ac*Math.sin(rad(A))]],0);
+}
+
+/* ---------- preguntas: clasificar ---------- */
+const NAMES={cuadrado:'Cuadrado','rectángulo':'Rectángulo',rombo:'Rombo',romboide:'Romboide',trapecio:'Trapecio',trapezoide:'Trapezoide'};
+const par2=[{s:[0,2],c:1},{s:[1,3],c:2}];
+const Q={
+  cuadrado:{p:[[0,0],[100,0],[100,100],[0,100]],t:[1,1,1,1],r:[0,1,2,3],par:par2,why:'Tiene 4 lados iguales y 4 ángulos rectos.'},
+  'rectángulo':{p:[[0,0],[150,0],[150,85],[0,85]],t:[1,2,1,2],r:[0,1,2,3],par:par2,why:'Tiene 4 ángulos rectos y sus lados opuestos son iguales.'},
+  rombo:{p:[[75,0],[150,50],[75,100],[0,50]],t:[1,1,1,1],r:[],par:par2,why:'Tiene 4 lados iguales, pero sus ángulos no son rectos.'},
+  romboide:{p:[[30,0],[170,0],[140,80],[0,80]],t:[1,2,1,2],r:[],par:par2,why:'Tiene los lados opuestos paralelos e iguales, pero los lados vecinos son distintos y no tiene ángulos rectos.'},
+  trapecio:{p:[[40,0],[110,0],[150,80],[0,80]],t:[0,1,0,1],r:[],par:[{s:[0,2],c:1}],why:'Tiene un solo par de lados paralelos (las flechitas).'},
+  trapezoide:{p:[[30,40],[180,60],[130,150],[60,120]],t:[],r:[],par:[],why:'No tiene ningún par de lados paralelos.'}
+};
+const CONF={cuadrado:['rectángulo','rombo','romboide','trapecio'],'rectángulo':['romboide','trapecio'],rombo:['romboide','trapecio'],romboide:['trapecio']};
+const LEG='Las flechitas > marcan lados paralelos, las rayitas iguales marcan lados iguales (si son distintas, los lados miden distinto) y el cuadradito marca un ángulo recto.';
+const TRAP={
+  isosceles:{n:'isósceles',p:[[40,0],[110,0],[150,80],[0,80]],t:[0,1,0,1],r:[]},
+  rectangulo:{n:'rectángulo',p:[[0,0],[80,0],[140,80],[0,80]],t:[],r:[0,3]},
+  escaleno:{n:'escaleno',p:[[30,0],[100,0],[170,80],[0,80]],t:[0,1,0,2],r:[]}
+};
+const TRZ=[[[180,140],[110,10],[30,30],[0,80]],[[10,130],[30,10],[160,70],[180,120]],[[10,80],[20,130],[190,50],[50,20]],[[30,130],[90,0],[180,70],[200,130]]];
+function shapeOf(k){
+  if(k==='trapecio'){const ty=pick(Object.keys(TRAP)),s=TRAP[ty];return{p:s.p,t:s.t,r:s.r,par:[{s:[0,2],c:1}],ty:s.n};}
+  if(k==='trapezoide')return{p:pick(TRZ),t:[],r:[],par:[]};
+  const s=Q[k];return{p:s.p,t:s.t,r:s.r,par:s.par};
+}
+function qTrapTipo(){
+  const ty=pick(Object.keys(TRAP)),s=TRAP[ty];
+  const NM={isosceles:'Trapecio isósceles',rectangulo:'Trapecio rectángulo',escaleno:'Trapecio escaleno'};
+  const WHY={isosceles:'Los dos lados que no son paralelos miden lo mismo (tienen la misma rayita).',rectangulo:'Tiene dos ángulos rectos (los cuadraditos).',escaleno:'Los dos lados que no son paralelos miden distinto y no tiene ángulos rectos.'};
+  return{topic:'Clasificar',kind:'choice',sig:'tt'+ty,tk:'trapecio-tipo',
+    svg:draw(fit(s.p,Math.random()*6.28,24),{ticks:s.t,right:s.r,par:[{s:[0,2],c:1}],alt:'trapecio'}),legend:LEG,
+    prompt:'Este cuadrilátero es un trapecio. ¿Qué tipo de trapecio es?',
+    options:Object.keys(NM).map(v=>({v,label:NM[v]})),answer:ty,
+    hint:'Mirá los dos lados que no son paralelos: ¿miden lo mismo? ¿hay ángulos rectos?',
+    explain:'Es un '+NM[ty].toLowerCase()+'. '+WHY[ty]};
+}
+function qQuad(){
+  const k=pick(Object.keys(Q)),s=Q[k],sh=shapeOf(k);
+  const pool=Object.keys(Q).filter(x=>x!==k&&!(CONF[k]||[]).includes(x));
+  return{topic:'Clasificar',kind:'choice',
+    sig:'q'+k,tk:k,svg:draw(fit(sh.p,Math.random()*6.28,24),{ticks:sh.t,right:sh.r,par:sh.par,alt:'cuadrilátero'}),legend:LEG,
+    prompt:'¿Qué cuadrilátero es? Elegí el nombre más preciso.',
+    options:shuffle([k,...shuffle(pool).slice(0,3)]).map(v=>({v,label:NAMES[v]})),answer:k,
+    hint:'Fijate en las flechitas, las rayitas y los ángulos rectos.',explain:'Es un '+NAMES[k].toLowerCase()+'. '+s.why+(sh.ty?' En este caso es un trapecio '+sh.ty+'.':'')};
+}
+function qTriSides(){
+  const T={
+    'equilátero':{p:[[0,0],[100,0],[50,-86.6]],t:[1,1,1],why:'Los tres lados tienen la misma marca: miden igual.'},
+    'isósceles':{p:[[0,0],[110,0],[55,-90]],t:[0,1,1],why:'Dos lados tienen la misma marca y el otro es distinto.'},
+    'escaleno':{p:[[0,0],[150,0],[40,-60]],t:[1,2,3],why:'Los tres lados tienen marcas distintas: ninguno mide igual.'}};
+  const k=pick(Object.keys(T)),s=T[k];
+  return{topic:'Clasificar',kind:'choice',sig:'ts'+k,svg:draw(fit(s.p,Math.random()*6.28,24),{ticks:s.t,alt:'triángulo'}),
+    legend:'Los lados con la misma cantidad de rayitas miden igual.',
+    prompt:'Clasificá este triángulo según sus lados.',
+    options:Object.keys(T).map(v=>({v,label:v[0].toUpperCase()+v.slice(1)})),answer:k,
+    hint:'Contá las rayitas de cada lado.',explain:'Es '+k+'. '+s.why};
+}
+function qTriAngles(){
+  const S={acutángulo:[[50,60,70],[55,65,60],[80,50,50],[75,45,60]],rectángulo:[[90,40,50],[90,30,60],[90,45,45]],obtusángulo:[[110,40,30],[100,50,30],[120,30,30],[105,45,30]]};
+  const k=pick(Object.keys(S)),a=shuffle(pick(S[k]));
+  const why={acutángulo:'Sus tres ángulos son menores que 90°.',rectángulo:'Tiene un ángulo de 90°.',obtusángulo:'Tiene un ángulo mayor que 90°.'}[k];
+  return{topic:'Clasificar',kind:'choice',sig:'ta'+a.slice().sort().join('-'),svg:draw(triFromAngles(...a),{angles:a.map(x=>x+'°'),alt:'triángulo'}),
+    prompt:'Clasificá este triángulo según sus ángulos.',
+    options:Object.keys(S).map(v=>({v,label:v[0].toUpperCase()+v.slice(1)})),answer:k,
+    hint:'Compará cada ángulo con 90°.',explain:'Es '+k+'. '+why};
+}
+
+/* ---------- preguntas: ángulos ---------- */
+function qTriNum(){
+  let A,B,C;do{A=R(6,16)*5;B=R(6,16)*5;C=180-A-B;}while(C<25||C>110);
+  const v=shuffle([A,B,C]),i=R(0,2),ans=v[i],rest=v.filter((_,j)=>j!==i);
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'tn'+v.slice().sort().join('-'),svg:draw(triFromAngles(...v),{angles:v.map((x,j)=>j===i?'x':x+'°'),alt:'triángulo con un ángulo x'}),
+    prompt:'Los ángulos de un triángulo suman 180°. ¿Cuánto mide x?',answer:ans,
+    hint:'Armá la ecuación: '+rest.join('° + ')+'° + x = 180°.',
+    explain:`${rest[0]} + ${rest[1]} + x = 180 → ${rest[0]+rest[1]} + x = 180 → x = ${ans}°.`};
+}
+const PAT=[[[1,0],[1,20],[1,40]],[[1,0],[2,0],[3,0]],[[1,0],[1,0],[2,0]],[[1,0],[1,30],[1,30]],[[2,0],[1,0],[1,20]],[[1,0],[1,15],[1,30]],[[1,0],[1,10],[1,20]]];
+function qTriAlg(){
+  const ok=PAT.filter(p=>{const S=p.reduce((s,q)=>s+q[0],0),O=p.reduce((s,q)=>s+q[1],0),x=(180-O)/S;return Number.isInteger(x)&&p.every(q=>q[0]*x+q[1]>=20&&q[0]*x+q[1]<=120);});
+  const p=shuffle(pick(ok)),S=p.reduce((s,q)=>s+q[0],0),O=p.reduce((s,q)=>s+q[1],0),x=(180-O)/S;
+  const t=q=>(q[0]===1?'x':q[0]+'x')+(q[1]?' + '+q[1]+'°':'');
+  const ang=p.map(q=>q[0]*x+q[1]);
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'tl'+p.map(t).sort().join(),svg:draw(triFromAngles(...ang),{angles:p.map(t),alt:'triángulo con ángulos en x'}),
+    legend:'El dibujo es solo una ayuda: lo que vale es la ecuación.',
+    prompt:'Los ángulos de un triángulo suman 180°. ¿Cuánto vale x?',answer:x,
+    hint:'Sumá todos los ángulos y igualá a 180: '+p.map(q=>pr(t(q))).join(' + ')+' = 180.',
+    explain:`${p.map(q=>pr(t(q))).join(' + ')} = 180 → ${S===1?'x':S+'x'}${O?' + '+O:''} = 180 → ${S}x = ${180-O} → x = ${x}°.`};
+}
+function qPara(){
+  const a=pick([50,55,60,65,70,75,110,115,120,125]),opp=Math.random()<.5,ask=opp?2:pick([1,3]);
+  const lab=[a+'°',null,null,null];lab[ask]='x';
+  const A=[0,0],B=[120,0],D=[70*Math.cos(rad(a)),-70*Math.sin(rad(a))],C=[B[0]+D[0],B[1]+D[1]];
+  const ans=opp?a:180-a;
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'pa'+a+(opp?'o':'s'),svg:draw(fit([A,B,C,D],0,30),{angles:lab,par:par2,alt:'paralelogramo con un ángulo x'}),
+    legend:'Las flechitas marcan los lados paralelos: es un paralelogramo.',
+    prompt:opp?'En un paralelogramo los ángulos opuestos son iguales. ¿Cuánto mide x?':'En un paralelogramo los ángulos opuestos son iguales y los cuatro ángulos suman 360°. ¿Cuánto mide x?',answer:ans,
+    hint:opp?'x está enfrente del ángulo de '+a+'°.':'El ángulo de '+a+'° tiene otro igual enfrente, y x también tiene otro igual enfrente. Armá la ecuación con los cuatro ángulos.',
+    explain:opp?`x está enfrente del ángulo de ${a}°, así que x = ${a}°.`:`${a} + ${a} + x + x = 360 → ${2*a} + 2x = 360 → 2x = ${360-2*a} → x = ${ans}°.`};
+}
+
+/* ---------- preguntas: perímetro ---------- */
+const UN={cm:{r:[2,12],ctx:'una figura dibujada en el cuaderno'},m:{r:[4,25],ctx:'un patio de la escuela'},km:{r:[2,9],ctx:'un circuito de bicicleta'}};
+function qPerim(sh){
+  const u=pick(Object.keys(UN)),[lo,hi]=UN[u].r,r=()=>R(lo,hi);
+  let p,o,sum,hint,txt;const shape=sh||pick(['rect','cuad','tri','trap','pent']);
+  if(shape==='rect'){const b=r(),h=Math.max(lo,Math.min(r(),b-1));
+    p=fit([[0,0],[b,0],[b,h],[0,h]],0);o={sides:[b,h]};sum=[b,h,b,h];hint='En un rectángulo, los lados opuestos miden lo mismo. ¿Cuántos lados hay que sumar?';}
+  else if(shape==='cuad'){const l=r();p=fit([[0,0],[100,0],[100,100],[0,100]],0);o={sides:[l],ticks:[1,1,1,1]};sum=[l,l,l,l];hint='Las rayitas indican que los 4 lados miden igual.';}
+  else if(shape==='tri'){const t=pick([[3,4,5],[5,6,7],[4,4,4],[5,5,8],[6,7,9],[4,5,6]]),k=u==='m'?pick([1,2,3]):1;const s=t.map(x=>x*k);
+    p=fit([[0,0],[150,0],[40,-60]],0);o={sides:s};sum=s;hint='Sumá los tres lados.';}
+  else if(shape==='trap'){const b=r(),B=b+R(2,6),l=r();
+    p=fit([[40,0],[110,0],[150,80],[0,80]],0);o={sides:[b,l,B,l],ticks:[0,1,0,1]};sum=[b,l,B,l];hint='Las rayitas indican que los dos lados no paralelos miden igual.';}
+  else{const s=[r(),r(),r(),r(),r()];p=fit([[0,40],[60,0],[140,10],[150,90],[40,100]],0);o={sides:s};sum=s;hint='Sumá los 5 lados.';}
+  o.alt='figura con medidas';const ans=sum.reduce((a,b)=>a+b,0);
+  return{topic:'Perímetro',kind:'num',unit:u,sig:'p'+shape+'-'+ans,svg:draw(p,o),legend:'Los dibujos no están hechos a escala.',
+    prompt:`Este dibujo representa ${UN[u].ctx}. Las medidas están en ${u}. ¿Cuánto mide su perímetro?`,answer:ans,hint,
+    explain:`El perímetro es la suma de todos los lados: ${sum.join(' + ')} = ${ans} ${u}.`};
+}
+
+/* ---------- juego ---------- */
+const TOPICS={mezcla:'Mezcla',clasificar:'Clasificar figuras',angulos:'Ángulos y ecuaciones',perimetro:'Perímetro'};
+/* ---------- más actividades ---------- */
+const VF=[
+['Un cuadrado tiene sus 4 ángulos rectos.',true,'Los 4 ángulos del cuadrado miden 90°.'],
+['Un rombo tiene sus 4 ángulos rectos.',false,'El rombo tiene 4 lados iguales, pero sus ángulos no tienen que ser rectos.'],
+['Todos los rectángulos tienen los 4 lados iguales.',false,'En el rectángulo solo los lados opuestos son iguales. Si los 4 fueran iguales, sería un cuadrado.'],
+['Un paralelogramo tiene dos pares de lados paralelos.',true,'Esa es justamente la definición de paralelogramo.'],
+['Un trapezoide no tiene ningún par de lados paralelos.',true,'Justamente: el trapezoide no tiene lados paralelos.'],
+['Un romboide tiene los 4 lados iguales.',false,'El romboide tiene iguales solo los lados opuestos.'],
+['Un triángulo puede tener dos ángulos rectos.',false,'Dos ángulos rectos ya suman 180° y no quedaría nada para el tercero.'],
+['Un triángulo equilátero tiene tres ángulos de 60°.',true,'Los tres ángulos son iguales y suman 180°: 180 ÷ 3 = 60°.'],
+['Un triángulo isósceles tiene los tres lados distintos.',false,'El isósceles tiene dos lados iguales. El que tiene los tres lados distintos es el escaleno.'],
+['Un triángulo obtusángulo tiene un ángulo mayor que 90°.',true,'Eso es lo que significa obtusángulo.'],
+['Un triángulo puede tener un ángulo recto y otro obtuso.',false,'90° más un ángulo mayor que 90° ya pasa los 180°.'],
+['Los cuatro ángulos de un cuadrilátero suman 360°.',true,'Siempre suman 360°.']];
+function qVF(pool){const i=pool?pick(pool):R(0,VF.length-1),v=VF[i];
+  return{topic:'Clasificar',kind:'choice',sig:'vf'+i,svg:'',prompt:'¿Verdadero o falso? '+v[0],options:[{v:'v',label:'Verdadero'},{v:'f',label:'Falso'}],answer:v[1]?'v':'f',hint:'Pensá en un ejemplo o hacé un dibujo en tu hoja.',explain:(v[1]?'Es verdadero. ':'Es falso. ')+v[2]};}
+const QUIEN=[['Tengo 4 lados iguales y 4 ángulos rectos.','cuadrado'],['Tengo 4 ángulos rectos, pero mis lados vecinos son distintos.','rectángulo'],['Tengo 4 lados iguales, pero ningún ángulo recto.','rombo'],['Tengo dos pares de lados paralelos e iguales, pero ningún ángulo recto y mis lados vecinos son distintos.','romboide'],['Tengo un solo par de lados paralelos.','trapecio'],['No tengo ningún par de lados paralelos.','trapezoide']];
+function qQuien(){const i=R(0,QUIEN.length-1),k=QUIEN[i][1],pool=Object.keys(Q).filter(x=>x!==k);
+  return{topic:'Clasificar',kind:'choice',sig:'qu'+i,tk:k,svg:'',prompt:'¿Qué figura soy? '+QUIEN[i][0],options:shuffle([k,...shuffle(pool).slice(0,3)]).map(v=>({v,label:NAMES[v]})),answer:k,
+    hint:'Pensá cuántos lados iguales, lados paralelos y ángulos rectos tiene cada figura.',explain:'Soy el '+NAMES[k].toLowerCase()+'. '+Q[k].why};}
+const SPEC={rectángulo:['cuadrado'],rombo:['cuadrado'],romboide:['cuadrado','rectángulo','rombo']};
+function qElegir(){
+  const k=pick(['cuadrado','rectángulo','rombo','romboide','trapezoide']);
+  const pool=Object.keys(Q).filter(x=>x!==k&&!(SPEC[k]||[]).includes(x)&&(x!=='trapezoide'||k==='trapezoide'));
+  const opts=shuffle([k,...shuffle(pool).slice(0,3)]).map(x=>({v:x,label:(()=>{const sh=shapeOf(x);return draw(fit(sh.p,Math.random()*6.28,24),{ticks:sh.t,right:sh.r,par:sh.par,alt:NAMES[x]});})()}));
+  return{topic:'Clasificar',kind:'choice',sig:'el'+k,tk:k,figs:true,svg:'',legend:LEG,prompt:'¿Cuál de estas figuras es un '+k+'?',options:opts,answer:k,ansText:NAMES[k],
+    hint:'Fijate en las flechitas, las rayitas y los ángulos rectos de cada una.',explain:'Es el '+NAMES[k].toLowerCase()+'. '+Q[k].why};}
+function qQuadNum(){
+  let a,b,c,d;do{a=R(12,24)*5;b=R(12,24)*5;c=R(12,24)*5;d=360-a-b-c;}while(d<50||d>140);
+  const v=shuffle([a,b,c,d]),i=R(0,3),ans=v[i],rest=v.filter((_,j)=>j!==i);
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'qn'+v.slice().sort().join('-'),svg:draw(fit([[0,30],[150,0],[170,90],[40,110]],0),{angles:v.map((x,j)=>j===i?'x':x+'°'),alt:'cuadrilátero con un ángulo x'}),
+    legend:'Dibujo no hecho a escala.',prompt:'Los ángulos de un cuadrilátero suman 360°. ¿Cuánto mide x?',answer:ans,
+    hint:'Armá la ecuación: '+rest.join('° + ')+'° + x = 360°.',explain:`${rest.join(' + ')} + x = 360 → ${rest[0]+rest[1]+rest[2]} + x = 360 → x = ${ans}°.`};}
+function qIsos(){
+  const baseGiven=Math.random()<.5;let b,a,lab;
+  if(baseGiven){b=pick([40,45,50,55,65,70,75]);a=180-2*b;lab=[b+'°',b+'°','x'];}
+  else{a=pick([30,40,50,70,80,100,110]);b=(180-a)/2;lab=['x',null,a+'°'];}
+  const ans=baseGiven?a:b;
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'is'+b+(baseGiven?'a':'b'),svg:draw(triFromAngles(b,b,a),{angles:lab,ticks:[0,1,1],alt:'triángulo isósceles con un ángulo x'}),
+    legend:'Es isósceles: las rayitas marcan los lados iguales, y los ángulos de la base son iguales.',prompt:'Los ángulos de un triángulo suman 180°. ¿Cuánto mide x?',answer:ans,
+    hint:baseGiven?'Armá la ecuación: '+b+'° + '+b+'° + x = 180°.':'Los dos ángulos de la base son iguales: x + x + '+a+'° = 180°.',
+    explain:baseGiven?`${b} + ${b} + x = 180 → ${2*b} + x = 180 → x = ${ans}°.`:`x + x + ${a} = 180 → 2x = ${180-a} → x = ${ans}°.`};}
+function qTriRect(){
+  const a=pick([20,25,30,35,40,50,55,60,65,70]),x=90-a;
+  const it=shuffle([{v:90,l:'90°'},{v:a,l:a+'°'},{v:x,l:'x'}]);
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'tr'+Math.min(a,x),svg:draw(triFromAngles(...it.map(q=>q.v)),{angles:it.map(q=>q.l),right:[it.findIndex(q=>q.v===90)],alt:'triángulo rectángulo con un ángulo x'}),
+    prompt:'Este triángulo tiene un ángulo recto. ¿Cuánto mide x?',answer:x,hint:'Armá la ecuación: 90° + '+a+'° + x = 180°.',
+    explain:`90 + ${a} + x = 180 → ${90+a} + x = 180 → x = ${x}°. Los dos ángulos agudos de un triángulo rectángulo suman 90°.`};}
+function qParaAlg(){
+  let a,c,x,b,d,A;
+  do{a=R(2,4);c=a+R(1,2);x=R(8,30);b=R(-4,6)*10;d=b-(c-a)*x;A=a*x+b;}while(A<40||A>140||A===90||Math.abs(d)>70);
+  const la=ex(a,b),lc=ex(c,d),B=180-A;
+  const Dp=[70*Math.cos(rad(A)),-70*Math.sin(rad(A))],Cp=[120+Dp[0],Dp[1]];
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'pg'+A+'-'+x,svg:draw(fit([[0,0],[120,0],Cp,Dp],0,30),{angles:[la,'?',lc,'?'],alt:'paralelogramo con ángulos en x'}),
+    legend:'Dibujo no hecho a escala.',
+    prompt:'En un paralelogramo los ángulos opuestos son iguales y los cuatro ángulos suman 360°. ¿Cuánto mide cada uno de los ángulos marcados con ?',answer:B,
+    hint:'Primero igualá las dos expresiones (son opuestos) y hallá x. Después calculá esos ángulos y usá que los cuatro suman 360°.',
+    explain:`${la} = ${lc} → ${c-a===1?'':(c-a)+'x = '+(b-d)+' → '}x = ${x}. Esos dos ángulos miden ${a} · ${x}${b?(b<0?' − '+(-b):' + '+b):''} = ${A}°. Los otros dos son iguales entre sí: ${A} + ${A} + ? + ? = 360 → 2 · ? = ${360-2*A} → ? = ${B}°.`};}
+function qLado(vv){
+  const u=pick(Object.keys(UN)),[lo,hi]=UN[u].r,r=()=>R(lo,hi),v=vv||pick(['rect','cuad','tri']);
+  if(v==='rect'){const b=r(),h=Math.max(lo,Math.min(r(),b-1)),P=2*(b+h);
+    return{topic:'Perímetro',kind:'num',unit:u,sig:'lr'+P,svg:draw(fit([[0,0],[b,0],[b,h],[0,h]],0),{sides:[b,'x'],alt:'rectángulo con un lado x'}),
+      prompt:`Este rectángulo tiene un perímetro de ${P} ${u}. ¿Cuánto mide el lado x?`,answer:h,hint:'Los lados opuestos miden lo mismo. La mitad del perímetro es lo que suman dos lados vecinos.',
+      explain:`${P} ÷ 2 = ${P/2} y ${P/2} − ${b} = ${h}. Comprobación: ${b} + ${h} + ${b} + ${h} = ${P} ${u}.`};}
+  if(v==='cuad'){const l=r(),P=4*l;
+    return{topic:'Perímetro',kind:'num',unit:u,sig:'lc'+P,svg:draw(fit([[0,0],[100,0],[100,100],[0,100]],0),{sides:['x'],ticks:[1,1,1,1],alt:'cuadrado con un lado x'}),
+      prompt:`Este cuadrado tiene un perímetro de ${P} ${u}. ¿Cuánto mide cada lado x?`,answer:l,hint:'Los 4 lados miden igual: x + x + x + x = '+P+'.',explain:`${P} ÷ 4 = ${l} ${u}.`};}
+  const t=pick([[3,4,5],[5,6,7],[4,5,6],[6,7,9],[5,5,8]]),k=u==='m'?pick([1,2]):1,s=t.map(z=>z*k),P=s[0]+s[1]+s[2];
+  return{topic:'Perímetro',kind:'num',unit:u,sig:'lt'+P+'-'+s[0],svg:draw(fit([[0,0],[150,0],[40,-60]],0),{sides:[s[0],s[1],'x'],alt:'triángulo con un lado x'}),legend:'Los dibujos no están hechos a escala.',
+    prompt:`Este triángulo tiene un perímetro de ${P} ${u}. ¿Cuánto mide el lado x?`,answer:s[2],hint:'Sumá las dos medidas que conocés y fijate cuánto falta para llegar a '+P+'.',
+    explain:`${s[0]} + ${s[1]} = ${s[0]+s[1]} y ${P} − ${s[0]+s[1]} = ${s[2]} ${u}.`};}
+function qProblema(ii){
+  const T=[
+    ()=>{const l=R(4,20)*pick([1,5]);return[`Una plaza cuadrada tiene ${l} m de lado. Si le dan una vuelta completa caminando por el borde, ¿cuántos metros caminan?`,4*l,'m',`La plaza es un cuadrado: 4 lados de ${l} m. ${l} + ${l} + ${l} + ${l} = ${4*l} m.`];},
+    ()=>{const b=R(8,30),h=R(4,b-1);return[`Quieren cercar un terreno rectangular de ${b} m por ${h} m con alambre, dando una sola vuelta. ¿Cuántos metros de alambre necesitan?`,2*(b+h),'m',`${b} + ${h} + ${b} + ${h} = ${2*(b+h)} m.`];},
+    ()=>{const t=pick([[3,4,5],[5,6,7],[4,5,6]]),k=pick([1,2,3]),s=t.map(z=>z*k);return[`Un cartel triangular tiene lados de ${s[0]} cm, ${s[1]} cm y ${s[2]} cm. Le pegan una cinta en todo el borde. ¿Cuántos centímetros de cinta necesitan?`,s[0]+s[1]+s[2],'cm',`${s[0]} + ${s[1]} + ${s[2]} = ${s[0]+s[1]+s[2]} cm.`];},
+    ()=>{const b=R(3,9),h=R(2,b-1);return[`Un circuito de bicicleta tiene forma de rectángulo de ${b} km por ${h} km. Si un ciclista da una vuelta completa, ¿cuántos kilómetros recorre?`,2*(b+h),'km',`${b} + ${h} + ${b} + ${h} = ${2*(b+h)} km.`];}];
+  const i=ii===undefined?R(0,T.length-1):ii,[txt,ans,u,exp]=T[i]();
+  return{topic:'Perímetro',kind:'num',unit:u,sig:'pr'+i,svg:'',prompt:txt,answer:ans,hint:'Hacé un dibujo en tu hoja y escribí la medida de cada lado.',explain:exp};}
+function qComparar(){
+  const u=pick(['cm','m']),r=()=>R(3,12),b=r()+2,h=Math.max(2,Math.min(r(),b-1));
+  let l=R(Math.max(2,Math.floor((b+h)/2)-2),Math.floor((b+h)/2)+2);
+  if((b+h)%2===0&&Math.random()<.35)l=(b+h)/2;
+  const pr=2*(b+h),pc=4*l,ans=pr>pc?'r':pr<pc?'c':'i';
+  return{topic:'Perímetro',kind:'choice',sig:'cmp'+b+'-'+h+'-'+l,svg:'',prompt:`Un rectángulo mide ${b} ${u} por ${h} ${u}. Un cuadrado mide ${l} ${u} de lado. ¿Cuál tiene mayor perímetro?`,
+    options:[{v:'r',label:'El rectángulo'},{v:'c',label:'El cuadrado'},{v:'i',label:'Tienen el mismo perímetro'}],answer:ans,hint:'Calculá el perímetro de cada figura y compará.',
+    explain:`Rectángulo: ${b} + ${h} + ${b} + ${h} = ${pr} ${u}. Cuadrado: 4 × ${l} = ${pc} ${u}. ${ans==='i'?'Dan lo mismo.':ans==='r'?'Gana el rectángulo.':'Gana el cuadrado.'}`};}
+const GEN={clasificar:[qQuad,qTriSides,qTriAngles,qVF,qQuien,qElegir],angulos:[qTriNum,qTriAlg,qPara,qQuadNum,qIsos,qTriRect,qParaAlg],perimetro:[qPerim,qLado,qProblema,qComparar]};
+const STAGES=[{k:'clasificar',t:'Clasificar figuras'},{k:'angulos',t:'Ángulos y ecuaciones'},{k:'perimetro',t:'Perímetro'},{k:'mezcla',t:'Todo mezclado'}];
+let S={mode:'',pair:null,stage:0,qs:[],i:0,tries:0,score:0,res:{},log:[],topic:'mezcla',name:'',cc:0};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const keyOf=n=>n.trim().toLowerCase().replace(/\s+/g,' ');
+const clean=n=>n.trim().replace(/-/g,' ').replace(/\s+/g,' ');
+function ls(k,v){try{if(v===undefined){const r=localStorage.getItem(k);return r?JSON.parse(r):null;}localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return v===undefined?null:false;}}
+const PK=n=>'dfig:pair:'+keyOf(n);
+function chk(name,st,pts,key){let h=7;const s=keyOf(name)+'|'+st+'|'+pts+'|'+keyOf(key||'')+'|dfig';for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%46656;return h.toString(36).padStart(3,'0');}
+const codeFor=(name,st,pts,key)=>clean(name)+'-'+st+'-'+pts+'-'+chk(clean(name),st,pts,key);
+const nextStage=P=>{for(let n=1;n<=4;n++)if(!P.done[n])return n;return 0;};
+const total=P=>Object.values(P.done).reduce((s,d)=>s+d.pts,0);
+const answerText=q=>q.kind==='choice'?(q.ansText||q.options.find(o=>o.v===q.answer).label):q.answer+(q.unit==='°'?'°':' '+q.unit);
+
+/* ---------- más cuadriláteros ---------- */
+const pr=l=>l.includes(' + ')||l.includes(' − ')?'('+l+')':l;
+const ex=(a,b)=>(a===1?'x':a+'x')+(b>0?' + '+b+'°':b<0?' − '+(-b)+'°':'');
+const PQ=[[[1,0],[1,20],[1,40],[1,60]],[[1,0],[1,0],[2,0],[2,0]],[[1,0],[2,0],[1,30],[2,30]],[[1,0],[1,10],[1,20],[1,30]],[[1,0],[1,0],[1,40],[1,40]],[[3,0],[2,0],[1,0],[2,0]]];
+function qQuadAlg(){
+  const ok=PQ.filter(p=>{const S=p.reduce((s,q)=>s+q[0],0),O=p.reduce((s,q)=>s+q[1],0),x=(360-O)/S;return Number.isInteger(x)&&p.every(q=>q[0]*x+q[1]>=40&&q[0]*x+q[1]<=140);});
+  const p=shuffle(pick(ok)),S=p.reduce((s,q)=>s+q[0],0),O=p.reduce((s,q)=>s+q[1],0),x=(360-O)/S,L=p.map(q=>ex(q[0],q[1]));
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'qa'+L.slice().sort().join(),svg:draw(fit([[0,30],[150,0],[170,90],[40,110]],0,26),{angles:L,alt:'cuadrilátero con ángulos en x'}),
+    legend:'Dibujo no hecho a escala: lo que vale es la ecuación.',prompt:'Los ángulos de un cuadrilátero suman 360°. ¿Cuánto vale x?',answer:x,
+    hint:'Sumá todos los ángulos e igualá a 360: '+L.map(pr).join(' + ')+' = 360.',
+    explain:`${L.map(pr).join(' + ')} = 360 → ${S===1?'x':S+'x'}${O?' + '+O:''} = 360 → ${S}x = ${360-O} → x = ${x}°.`};
+}
+function qRomboAlg(){
+  let a,c,x,b,d,A;
+  do{a=R(2,4);c=a+R(1,2);x=R(8,30);b=R(-4,6)*10;d=b-(c-a)*x;A=a*x+b;}while(A<40||A>140||A===90||Math.abs(d)>70);
+  const la=ex(a,b),lc=ex(c,d);
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'ra'+A+'-'+x,
+    svg:draw(fit([[90,0],[180,50],[90,100],[0,50]],(Math.random()-.5)*.3,26),{angles:[la,null,lc,null],ticks:[1,1,1,1],alt:'rombo con dos ángulos opuestos en x'}),
+    legend:'Dibujo no hecho a escala. Las rayitas marcan los 4 lados iguales.',
+    prompt:'En un rombo, los ángulos opuestos son iguales. ¿Cuánto mide cada uno de los dos ángulos marcados?',answer:A,
+    hint:'Igualá las dos expresiones, hallá x y después calculá el ángulo: x no es el ángulo.',
+    explain:`${la} = ${lc} → ${c-a===1?'':(c-a)+'x = '+(b-d)+' → '}x = ${x}. El ángulo mide ${a} · ${x}${b?(b<0?' − '+(-b):' + '+b):''} = ${A}°.`};
+}
+function trapR(B,labB,labC,extra){
+  const h=90,cx=150-h/Math.tan(rad(B));
+  return draw(fit([[0,h],[150,h],[cx,0],[0,0]],(Math.random()-.5)*.5,26),{angles:[null,labB,labC,null],right:[0,3],par:[{s:[0,2],c:1}],alt:'trapecio rectángulo'});
+}
+function qTrapRectNum(){
+  const b=pick([50,55,60,65,70,75,80]);
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'tr4'+b,svg:trapR(b,b+'°','x'),
+    legend:'Las flechitas marcan los lados paralelos y los cuadraditos, los ángulos rectos. Dibujo no hecho a escala.',
+    prompt:'Este trapecio tiene dos ángulos rectos. Los ángulos de un cuadrilátero suman 360°. ¿Cuánto mide x?',answer:180-b,
+    hint:'Armá la ecuación: 90° + 90° + '+b+'° + x = 360°.',explain:`90 + 90 + ${b} + x = 360 → ${180+b} + x = 360 → x = ${180-b}°.`};
+}
+const PT=[[[1,20],[2,10]],[[2,0],[1,30]],[[1,10],[1,30]],[[3,0],[2,10]],[[1,0],[2,0]],[[2,20],[2,0]]];
+function qTrapRectAlg(){
+  const ok=PT.filter(p=>{const S=p[0][0]+p[1][0],O=p[0][1]+p[1][1],x=(180-O)/S;return Number.isInteger(x)&&p.every(q=>q[0]*x+q[1]>=40&&q[0]*x+q[1]<=140);});
+  const p=pick(ok),S=p[0][0]+p[1][0],O=p[0][1]+p[1][1],x=(180-O)/S,B=p[0][0]*x+p[0][1],C=p[1][0]*x+p[1][1],eb=ex(...p[0]),ec=ex(...p[1]);
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'tR'+eb+ec,svg:trapR(B,eb,ec),
+    legend:'Las flechitas marcan los lados paralelos y los cuadraditos, los ángulos rectos.',
+    prompt:'Este trapecio tiene dos ángulos rectos. Los ángulos de un cuadrilátero suman 360°. ¿Cuánto mide el ángulo C?',answer:C,
+    hint:'Armá la ecuación: 90° + 90° + '+pr(eb)+' + '+pr(ec)+' = 360°, hallá x y después calculá el ángulo C.',
+    explain:`90 + 90 + ${pr(eb)} + ${pr(ec)} = 360 → ${S}x + ${O+180} = 360 → ${S}x = ${180-O} → x = ${x}. El ángulo C mide ${ec} = ${C}°.`};
+}
+function qTrapIsos(){
+  const bg=Math.random()<.5,a=pick([55,60,65,70,75]),W=140,h=60,ins=h/Math.tan(rad(a)),g=bg?a:180-a,ans=bg?180-a:a;
+  const lab=bg?[a+'°',a+'°','x','x']:['x','x',(180-a)+'°',(180-a)+'°'];
+  return{topic:'Ángulos',kind:'num',unit:'°',sig:'ti'+a+(bg?'b':'t'),
+    svg:draw(fit([[0,h],[W,h],[W-ins,0],[ins,0]],(Math.random()-.5)*.5,26),{angles:lab,ticks:[0,1,0,1],par:[{s:[0,2],c:1}],alt:'trapecio isósceles con un ángulo x'}),
+    legend:'Las rayitas marcan los lados iguales y las flechitas, los lados paralelos. Dibujo no hecho a escala.',
+    prompt:'Este trapecio es isósceles: los dos ángulos de cada base son iguales entre sí. Los ángulos de un cuadrilátero suman 360°. ¿Cuánto mide x?',answer:ans,
+    hint:bg?'Armá la ecuación: '+a+'° + '+a+'° + x + x = 360°.':'Armá la ecuación: x + x + '+g+'° + '+g+'° = 360°.',
+    explain:bg?`${a} + ${a} + x + x = 360 → ${2*a} + 2x = 360 → 2x = ${360-2*a} → x = ${ans}°.`:`x + x + ${g} + ${g} = 360 → 2x = ${360-2*g} → x = ${ans}°.`};
+}
+const pPerimR=()=>qPerim('rect'),pPerimC=()=>qPerim('cuad'),pPerimT=()=>qPerim('trap'),pPerimTri=()=>qPerim('tri');
+const pLadoR=()=>qLado('rect'),pLadoC=()=>qLado('cuad'),pLadoTri=()=>qLado('tri');
+const pProb0=()=>qProblema(0),pProb1=()=>qProblema(1),pProb2=()=>qProblema(2),pProb3=()=>qProblema(3);
+const qVFQ=()=>qVF([0,1,2,3,4,5,11]),qVFT=()=>qVF([6,7,8,9,10]);
+const TRI={clasificar:[qTriSides,qTriAngles,qVFT],angulos:[qTriNum,qTriAlg,qIsos,qTriRect],perimetro:[pPerimTri,pLadoTri,pProb2]};
+const QUAD={clasificar:[qQuad,qQuien,qElegir,qVFQ,qTrapTipo],angulos:[qPara,qParaAlg,qQuadNum,qQuadAlg,qRomboAlg,qTrapRectNum,qTrapRectAlg,qTrapIsos],perimetro:[pPerimR,pPerimC,pPerimT,pLadoR,pLadoC,pProb0,pProb1,pProb3,qComparar]};
+const pickN=(arr,n,tag)=>{const g=shuffle(arr);return Array.from({length:n},(_,i)=>[g[i%g.length],tag]);};
+function seeded(str){
+  let h=1779033703^str.length;
+  for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
+  let a=h>>>0;
+  return function(){a=(a+0x6D2B79F5)|0;let t=Math.imul(a^a>>>15,1|a);t=(t+Math.imul(t^t>>>7,61|t))^t;return((t^t>>>14)>>>0)/4294967296;};
+}
+function orderFor(topic,key,stage){
+  const orig=Math.random;let qs;
+  Math.random=seeded(keyOf(key)+'|'+stage);
+  try{qs=build(topic);}finally{Math.random=orig;}
+  qs=shuffle(qs);
+  qs.forEach(q=>{if(q.kind==='choice')q.options=shuffle(q.options);});
+  return qs;
+}
+function build(t){
+  const used=new Set(),out=[],tkc={};let list;
+  if(t==='mezcla')list=[...pickN(QUAD.clasificar,3,'Q'),...pickN(TRI.clasificar,1,'T'),...pickN(QUAD.angulos,2,'Q'),...pickN(TRI.angulos,1,'T'),...pickN(QUAD.perimetro,3,'Q')];
+  else list=[...pickN(QUAD[t],8,'Q'),...pickN(TRI[t],2,'T')];
+  shuffle(list).forEach(([f,tag])=>{let q,n=0;const capOk=z=>!(z.tk&&(tkc[z.tk]||0)>=(z.tk==='trapezoide'?1:2));do{q=f();n++;}while((used.has(q.sig)||!capOk(q))&&n<60);if(used.has(q.sig)||!capOk(q)){n=0;do{q=f();n++;}while(used.has(q.sig)&&n<60);}used.add(q.sig);if(q.tk)tkc[q.tk]=(tkc[q.tk]||0)+1;q._t=tag;out.push(q);});
+  return out;
+}
+
+/* ---------- inicio ---------- */
+function home(msg){
+  S.mode='';
+  const okStore=ls('dfig:test',1)!==false;
+  $('app').innerHTML=`<h1>Detectives <span>de figuras</span></h1>
+  <p class="sub">Torneo de cuatro etapas. Se juega de a dos o tres por teléfono.</p>
+  <div class="card">
+    <label for="nm">Nombre de la pareja o del trío</label>
+    <input type="text" id="nm" maxlength="24" value="${esc(S.name)}" placeholder="Por ejemplo: Sofi y Tomi">
+    <label for="ky">Clave de la clase (la escribe la docente en el pizarrón)</label>
+    <input type="text" id="ky" maxlength="20" value="${esc(S.key||'')}" placeholder="Por ejemplo: lunes9">
+    ${msg?`<p class="fb bad" style="margin:10px 0 0">${msg}</p>`:''}
+    ${okStore?'':'<p class="fb bad" style="margin:10px 0 0">Este navegador no permite guardar el avance: si cierran la página, se pierde.</p>'}
+    <button class="go" onclick="enter()">Entrar al torneo</button>
+    <button class="go alt" onclick="practice()">Practicar (no suma puntos)</button>
+  </div>
+  <p class="legend" style="text-align:center;margin-top:14px"><a href="#" onclick="teacher();return false">Modo docente</a></p>`;
+}
+function enter(){
+  const name=clean($('nm').value),key=keyOf($('ky').value);
+  S.name=name;S.key=key;S.note='';
+  if(name.length<2){home('Escriban el nombre de la pareja o del trío.');return;}
+  if(!key){home('Escriban la clave de la clase que está en el pizarrón.');return;}
+  const P=ls(PK(name))||{name,done:{},cur:null};
+  if(!P.cur||P.key===undefined)P.key=key;
+  else if(P.key!==key)S.note='Esta etapa ya estaba empezada con la clave «'+esc(P.key)+'», así que se sigue con esa.';
+  S.pair=P;ls(PK(name),P);
+  hub();
+}
+function hub(){
+  S.mode='';const P=S.pair,nx=nextStage(P);
+  const rows=STAGES.map((s,i)=>{const n=i+1,d=P.done[n];let st,btn='';
+    if(d){st=`<b>${d.pts} pts</b>`;btn=`<button class="mini" onclick="results(${n})">Ver</button>`;}
+    else if(n===nx){const c=P.cur&&P.cur.st===n;st=c?'En curso':'Lista';btn=`<button class="mini" onclick="play(${n})">${c?'Seguir':'Jugar'}</button>`;}
+    else st='🔒';
+    return `<div class="stg"><span>Etapa ${n}: ${s.t}</span><span>${st} ${btn}</span></div>`;}).join('');
+  $('app').innerHTML=`<h1>${esc(P.name)}</h1><p class="sub">Clave de la clase: <b>${esc(P.key||'')}</b>. Las etapas se juegan en orden y cada una suma una sola vez.</p>${S.note?`<p class="fb bad">${S.note}</p>`:''}
+  <div class="card">${rows}<div class="stg tot"><span>Total</span><span><b>${total(P)} pts</b></span></div></div>
+  <button class="go alt" onclick="home()">Salir</button>`;
+  window.scrollTo(0,0);
+}
+function play(n){
+  const P=S.pair;if(P.done[n]||n!==nextStage(P))return;
+  S.mode='torneo';S.stage=n;
+  if(P.cur&&P.cur.st===n){const c=P.cur;S.qs=c.qs;S.i=c.i;S.score=c.score;S.res=c.res;S.log=c.log;}
+  else{S.qs=orderFor(STAGES[n-1].k,P.key||'',n);S.i=0;S.score=0;S.res={};S.log=[];save(0);}
+  if(S.i>=S.qs.length){finish();return;}
+  show();
+}
+function save(adv){if(S.mode!=='torneo')return;const P=S.pair;P.cur={st:S.stage,qs:S.qs,i:S.i+adv,score:S.score,res:S.res,log:S.log};ls(PK(P.name),P);}
+
+/* ---------- desafíos ---------- */
+function show(){
+  const q=S.qs[S.i];S.tries=0;
+  const ans=q.kind==='choice'
+    ?`<div class="opts${q.figs?' figs':''}">${q.options.map((o,j)=>`<button data-v="${o.v}" onclick="pickOpt(${j})">${o.label}</button>`).join('')}</div>`
+    :`<div class="row"><input type="number" inputmode="numeric" step="1" id="num" aria-label="Tu respuesta" placeholder="Tu respuesta"><span class="unit">${q.unit}</span><button onclick="checkNum()">Comprobar</button></div>`;
+  const tag=S.mode==='torneo'?`Etapa ${S.stage} · ${S.i+1} de ${S.qs.length}`:`Desafío ${S.i+1} de ${S.qs.length}`;
+  const exit=S.mode==='torneo'?'hub()':'practice()';
+  $('app').innerHTML=`<div class="top"><span class="chip">${tag}</span><span class="chip">${q.topic}</span><span class="chip">⭐ ${S.score}</span></div>
+  <div class="card">${q.svg?`<div class="fig">${q.svg}</div>`:''}${q.legend?`<p class="legend">${q.legend}</p>`:''}
+  <p class="q">${q.prompt}</p>${ans}<div id="fb" aria-live="polite"></div></div>
+  <p class="legend" style="text-align:center;margin-top:12px"><a href="#" onclick="${exit};return false">${S.mode==='torneo'?'Guardar y salir':'Salir de la práctica'}</a></p>`;
+  const n=$('num');if(n){n.focus();n.addEventListener('keydown',e=>{if(e.key==='Enter')checkNum();});}
+}
+function pickOpt(j){const q=S.qs[S.i];judge(q.options[j].v===q.answer,j);}
+function checkNum(){const v=$('num').value;if(v==='')return;judge(Number(v)===S.qs[S.i].answer);}
+function judge(ok,j){
+  const q=S.qs[S.i];const r=S.res[q.topic]=S.res[q.topic]||{ok:0,n:0};
+  if(ok){const pts=S.tries===0?10:5;S.score+=pts;if(S.tries===0)r.ok++;r.n++;S.log[S.i]=S.tries===0?'a':'b';
+    end(`<div class="fb good"><b>¡Eso es! +${pts} puntos</b>${q.explain}</div>`);return;}
+  S.tries++;
+  if(S.tries<2){
+    if(q.kind==='choice')document.querySelectorAll('.opts button')[j].disabled=true;
+    $('fb').innerHTML=`<div class="fb bad"><b>Todavía no. Prueben de nuevo.</b>Pista: ${q.hint}</div>`;
+    const n=$('num');if(n){n.select();}
+    return;}
+  r.n++;S.log[S.i]='x';
+  end(`<div class="fb bad"><b>Esta vez no salió. La respuesta era ${answerText(q)}.</b>${q.explain}</div>`);
+}
+function end(html){
+  const q=S.qs[S.i];
+  document.querySelectorAll('.opts button').forEach(b=>{b.disabled=true;if(b.dataset.v===q.answer)b.classList.add('right');});
+  const n=$('num');if(n){n.disabled=true;n.nextElementSibling.nextElementSibling.disabled=true;}
+  const last=S.i===S.qs.length-1;
+  save(1);
+  $('fb').innerHTML=html+`<button class="go next" onclick="${last?'finish()':'nextQ()'}">${last?'Ver resultado':'Siguiente'}</button>`;
+  $('fb').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function nextQ(){S.i++;show();window.scrollTo(0,0);}
+
+/* ---------- resultados ---------- */
+function finish(){
+  if(S.mode==='torneo'){const P=S.pair,n=S.stage;P.done[n]={pts:S.score,res:S.res,log:S.log,qs:S.qs,key:P.key||''};P.cur=null;ls(PK(P.name),P);results(n);return;}
+  const max=S.qs.length*10;
+  $('app').innerHTML=`<h1>¡Bien practicado!</h1><div class="card"><div class="big">${S.score} <span style="font-size:1.2rem">de ${max}</span></div>
+  <p>Estos puntos son de práctica y no cuentan en el torneo.</p>
+  <div class="sum">${Object.entries(S.res).map(([k,v])=>`<div><span>${k}</span><span>${v.ok} de ${v.n} a la primera</span></div>`).join('')}</div>
+  <button class="go" onclick="startP()">Practicar otra vez</button><button class="go alt" onclick="home()">Volver al inicio</button></div>`;
+  window.scrollTo(0,0);
+}
+function results(n){
+  const P=S.pair,d=P.done[n];S.mode='';const nx=nextStage(P);
+  const topics=Object.entries(d.res).map(([k,v])=>`<div><span>${k}</span><span>${v.ok} de ${v.n} a la primera</span></div>`).join('');
+  const tbl=STAGES.map((s,i)=>`<tr><td>Etapa ${i+1}: ${s.t}</td><td>${P.done[i+1]?P.done[i+1].pts:'—'}</td></tr>`).join('');
+  const rep=d.qs.map((q,i)=>{const l=d.log[i];const ic=l==='a'?'✔ a la primera':l==='b'?'✔ a la segunda':'✖ no salió';
+    return `<div class="rv"><b>${i+1}. ${ic}</b>${q.svg?`<div class="fig">${q.svg}</div>`:''}<p>${q.prompt}</p><p><b>Respuesta:</b> ${answerText(q)}</p><p>${q.explain}</p></div>`;}).join('');
+  $('app').innerHTML=`<h1>Etapa ${n} terminada</h1><div class="card"><div class="big">${d.pts} <span style="font-size:1.2rem">de 100 puntos</span></div>
+  <div class="sum">${topics}</div>
+  <p class="q">Tabla de ${esc(P.name)}</p>
+  <div class="scroll"><table class="tb">${tbl}<tr class="tt"><td>Total</td><td>${total(P)}</td></tr></table></div>
+  <p class="q">Código para la docente</p>
+  <div class="codebox"><code id="cd">${esc(codeFor(P.name,n,d.pts,d.key||P.key||''))}</code><button class="mini" onclick="copyCode()">Copiar</button></div>
+  <details><summary>Repasar los desafíos de esta etapa</summary>${rep}</details>
+  ${nx?`<p class="legend">Antes de seguir, esperen el repaso con el curso.</p><button class="go" onclick="play(${nx})">Ir a la etapa ${nx}</button>`:'<p><b>¡Terminaron las cuatro etapas!</b> Muéstrenle la tabla a la docente.</p>'}
+  <button class="go alt" onclick="hub()">Ver mis etapas</button></div>`;
+  window.scrollTo(0,0);
+}
+function copyCode(){const t=$('cd').textContent;try{navigator.clipboard.writeText(t);}catch(e){}const r=document.createRange();r.selectNodeContents($('cd'));const s=getSelection();s.removeAllRanges();s.addRange(r);}
+
+/* ---------- práctica ---------- */
+function practice(){
+  S.mode='practica';
+  $('app').innerHTML=`<h1>Practicar</h1><p class="sub">Acá no se suman puntos y se puede repetir todas las veces que quieran.</p>
+  <div class="card"><label>¿Qué quieren practicar?</label>
+  <div class="topics">${Object.entries(TOPICS).map(([k,v])=>`<button aria-pressed="${S.topic===k}" onclick="setT('${k}')">${v}</button>`).join('')}</div>
+  <button class="go" onclick="startP()">Empezar</button><button class="go alt" onclick="home()">Volver</button></div>`;
+}
+function setT(k){S.topic=k;practice();}
+function startP(){S.mode='practica';S.qs=build(S.topic);S.i=0;S.score=0;S.res={};S.log=[];show();}
+
+/* ---------- modo docente ---------- */
+function teacher(msg){
+  S.mode='';
+  const T=ls('dfig:teacher')||{rows:{}};const pairs={};
+  Object.values(T.rows).forEach(r=>{const k=keyOf(r.name);pairs[k]=pairs[k]||{name:r.name,p:{}};pairs[k].p[r.st]=r.pts;});
+  const list=Object.values(pairs).map(x=>({...x,tot:Object.values(x.p).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.tot-a.tot);
+  const best=[1,2,3,4].map(st=>Math.max(0,...list.map(x=>x.p[st]!==undefined?x.p[st]:0)));
+  const body=list.map((x,i)=>`<tr><td>${i+1}. ${esc(x.name)}</td>${[1,2,3,4].map(st=>{const v=x.p[st];return `<td class="${v!==undefined&&v>0&&v===best[st-1]?'best':''}">${v!==undefined?v:'—'}</td>`;}).join('')}<td><b>${x.tot}</b></td></tr>`).join('');
+  $('app').innerHTML=`<h1>Modo docente</h1><p class="sub">Pegá los códigos que te dan las parejas, uno por línea. Cada pareja suma una sola vez por etapa.</p>
+  <div class="card"><label for="tk">Clave de la clase (la misma que escribiste en el pizarrón)</label>
+  <input type="text" id="tk" maxlength="20" value="${esc(ls('dfig:tkey')||'')}" placeholder="Por ejemplo: lunes9">
+  <label for="cods">Códigos de las parejas</label><textarea id="cods" placeholder="Sofi y Tomi-1-80-k3f"></textarea>
+  <button class="go" onclick="loadCodes()">Cargar códigos</button>
+  ${msg?`<p class="fb" style="margin-top:12px">${msg}</p>`:''}
+  <p class="q">Tabla del curso</p>
+  <div class="scroll"><table class="tb big"><tr><th>Pareja</th><th>E1</th><th>E2</th><th>E3</th><th>E4</th><th>Total</th></tr>${body||'<tr><td colspan="6">Todavía no hay códigos cargados.</td></tr>'}</table></div>
+  <p class="legend">E1 Clasificar · E2 Ángulos y ecuaciones · E3 Perímetro · E4 Todo mezclado. En verde, el mejor puntaje de cada etapa.</p>
+  <button class="go alt" id="clr" onclick="clearT()">Borrar la tabla</button><button class="go alt" onclick="home()">Volver al inicio</button></div>`;
+}
+function loadCodes(){
+  const key=keyOf($('tk').value);ls('dfig:tkey',key);
+  if(!key){teacher('Escribí primero la clave de la clase.');return;}
+  const T=ls('dfig:teacher')||{rows:{}};let ok=0,rep=0;const bad=[];
+  $('cods').value.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(l=>{
+    const m=l.match(/^(.+)-([1-4])-(\d{1,3})-([0-9a-zA-Z]{3})$/);
+    if(!m){bad.push(l);return;}
+    const name=clean(m[1]),st=+m[2],pts=+m[3];
+    if(pts>100||pts%5||chk(name,st,pts,key)!==m[4].toLowerCase()){bad.push(l);return;}
+    const k=keyOf(name)+'|'+st;
+    if(T.rows[k]){rep++;return;}
+    T.rows[k]={name,st,pts};ok++;});
+  ls('dfig:teacher',T);
+  teacher(`Cargados: ${ok}. Repetidos (no suman): ${rep}.`+(bad.length?` No válidos o con otra clave: ${bad.map(esc).join(' · ')}`:''));
+}
+function clearT(){
+  if(!S.cc){S.cc=1;$('clr').textContent='Tocá de nuevo para borrar todo';return;}
+  S.cc=0;ls('dfig:teacher',{rows:{}});teacher('Tabla borrada.');
+}
+home();
+</script>
+</body>
+</html>
